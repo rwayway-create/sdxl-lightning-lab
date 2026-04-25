@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-TW"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SDXL Lightning Lab</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Manrope:wght@600;700;800&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#005049",
+                        "on-primary-fixed": "#00201d",
+                        "inverse-on-surface": "#2f2e43",
+                        "on-error": "#690005",
+                        "secondary-fixed-dim": "#6bd8cb",
+                        "surface": "#111125",
+                        "on-tertiary-fixed-variant": "#45455b",
+                        "tertiary-fixed-dim": "#c5c4df",
+                        "secondary": "#6bd8cb",
+                        "tertiary-container": "#c5c4df",
+                        "inverse-primary": "#006a62",
+                        "on-primary-container": "#005d55",
+                        "tertiary-fixed": "#e2e0fc",
+                        "surface-variant": "#333348",
+                        "on-background": "#e2e0fc",
+                        "primary-container": "#6cd8cb",
+                        "on-secondary-container": "#00302b",
+                        "secondary-container": "#29a195",
+                        "surface-dim": "#111125",
+                        "primary-fixed-dim": "#6cd8cb",
+                        "on-tertiary": "#2e2e44",
+                        "surface-tint": "#6cd8cb",
+                        "inverse-surface": "#e2e0fc",
+                        "on-tertiary-fixed": "#191a2e",
+                        "surface-container-lowest": "#0c0c1f",
+                        "on-secondary": "#003732",
+                        "outline-variant": "#3d4947",
+                        "error-container": "#93000a",
+                        "primary": "#89f5e7",
+                        "background": "#111125",
+                        "on-primary": "#003732",
+                        "primary-fixed": "#89f5e7",
+                        "surface-container-high": "#28283d",
+                        "surface-container": "#1e1e32",
+                        "on-tertiary-container": "#515067",
+                        "outline": "#879391",
+                        "on-secondary-fixed": "#00201d",
+                        "error": "#ffb4ab",
+                        "surface-bright": "#37374d",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-low": "#1a1a2e",
+                        "on-surface-variant": "#bcc9c6",
+                        "tertiary": "#e2e0fc",
+                        "on-primary-fixed-variant": "#005049",
+                        "surface-container-highest": "#333348",
+                        "on-surface": "#e2e0fc",
+                        "secondary-fixed": "#89f5e7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope", "sans-serif"],
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Space Grotesk", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .grid-bg {
+            background-image: linear-gradient(to right, rgba(108, 216, 203, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(108, 216, 203, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .radial-bloom {
+            background: radial-gradient(circle at center, rgba(137, 245, 231, 0.15) 0%, transparent 60%);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body min-h-screen flex flex-col antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full h-16 z-50 bg-[#111125]/80 backdrop-blur-2xl flex justify-between items-center px-6">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<span class="text-xl font-headline font-bold tracking-tighter text-[#89f5e7]">Lightning Lab</span>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-[#89f5e7] border-b-2 border-[#89f5e7] pb-1 text-sm font-medium" href="#">創作</a>
+<a class="text-slate-400 hover:bg-[#28283d]/50 hover:text-[#89f5e7] px-3 py-1 rounded-md transition-colors text-sm font-medium" href="#">Showcase</a>
+<a class="text-slate-400 hover:bg-[#28283d]/50 hover:text-[#89f5e7] px-3 py-1 rounded-md transition-colors text-sm font-medium" href="#">API</a>
+<a class="text-slate-400 hover:bg-[#28283d]/50 hover:text-[#89f5e7] px-3 py-1 rounded-md transition-colors text-sm font-medium" href="#">文件</a>
+</nav>
+</div>
+<div class="flex items-center gap-4 text-primary">
+<button class="p-2 hover:bg-[#28283d]/50 rounded-full transition-transform duration-200 hover:scale-95 active:scale-90 flex items-center justify-center">
+<span class="material-symbols-outlined">history</span>
+</button>
+<button class="p-2 hover:bg-[#28283d]/50 rounded-full transition-transform duration-200 hover:scale-95 active:scale-90 flex items-center justify-center">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="p-2 hover:bg-[#28283d]/50 rounded-full transition-transform duration-200 hover:scale-95 active:scale-90 flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow pt-16 relative flex flex-col items-center">
+<!-- Hero Section -->
+<section class="w-full h-[420px] relative flex flex-col items-center justify-start pt-16 overflow-hidden">
+<div class="absolute inset-0 grid-bg pointer-events-none"></div>
+<div class="absolute inset-0 radial-bloom pointer-events-none"></div>
+<div class="z-10 text-center flex flex-col items-center gap-6 px-4">
+<div class="flex gap-3">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high border border-[rgba(108,216,203,0.15)] text-xs font-mono text-primary-fixed-dim">
+<span class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(137,245,231,0.6)]"></span>
+                        SDXL Lightning 1-Step
+                    </span>
+<span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-surface-container-high border border-[rgba(108,216,203,0.15)] text-xs font-mono text-primary-fixed-dim">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+                        &lt;2 sec / image
+                    </span>
+</div>
+<h1 class="text-4xl md:text-6xl font-headline font-extrabold tracking-tight text-on-surface">
+                    用一行字，<br class="md:hidden"/>把想像生成圖片
+                </h1>
+<p class="text-on-surface-variant max-w-2xl text-sm md:text-base font-body">
+                    Cloudflare × ByteDance SDXL Lightning 模型。極速生成，支援繁體中文提示詞。
+                </p>
+</div>
+</section>
+<!-- Sticky Composer (Overlapping) -->
+<section class="w-full max-w-5xl px-4 md:px-8 -mt-24 z-20 relative mb-16">
+<div class="bg-surface-container-highest/40 backdrop-blur-[24px] border border-[rgba(108,216,203,0.15)] rounded-[24px] p-6 shadow-[0_32px_64px_-12px_rgba(12,12,31,0.5)]">
+<div class="flex flex-col gap-6">
+<!-- Text Area -->
+<div class="relative group">
+<span class="material-symbols-outlined absolute top-4 left-4 text-primary opacity-70">auto_awesome</span>
+<textarea class="w-full bg-surface-container-lowest/50 border border-outline-variant/30 rounded-xl py-4 pl-12 pr-4 text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-4 focus:ring-offset-surface-container-highest/40 focus:border-transparent transition-all resize-none font-body text-lg h-32" placeholder="描述你想看到的畫面..."></textarea>
+</div>
+<!-- img2img Dropzone -->
+<div class="border-2 border-dashed border-[rgba(108,216,203,0.3)] bg-surface-container-low/30 rounded-xl p-4 flex items-center justify-center gap-3 cursor-pointer hover:bg-surface-container-low/50 transition-colors">
+<span class="material-symbols-outlined text-primary-fixed-dim">image</span>
+<span class="text-sm text-on-surface-variant font-medium">拖曳圖片至此，或點擊上傳 (img2img 參考)</span>
+</div>
+<!-- Settings Bar & CTA -->
+<div class="flex flex-col md:flex-row items-center justify-between gap-6 pt-2 border-t border-[rgba(108,216,203,0.15)]">
+<div class="flex flex-wrap items-center gap-6 w-full md:w-auto">
+<!-- Steps -->
+<div class="flex items-center gap-3">
+<span class="text-[10px] font-headline font-bold uppercase tracking-[0.1em] text-on-surface-variant">STEPS</span>
+<div class="flex items-center gap-2 bg-surface-container-lowest rounded-lg p-1 border border-outline-variant/30">
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container text-on-surface-variant"><span class="material-symbols-outlined text-sm">remove</span></button>
+<span class="font-mono text-sm w-6 text-center text-primary">8</span>
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container text-on-surface-variant"><span class="material-symbols-outlined text-sm">add</span></button>
+</div>
+</div>
+<!-- Resolution -->
+<div class="flex items-center gap-3">
+<span class="text-[10px] font-headline font-bold uppercase tracking-[0.1em] text-on-surface-variant">RESOLUTION</span>
+<div class="flex items-center gap-1 bg-surface-container-lowest rounded-lg p-1 border border-outline-variant/30">
+<button class="px-3 py-1.5 text-xs font-mono rounded bg-surface-container-high text-primary border border-[rgba(108,216,203,0.2)]">1024</button>
+<button class="px-3 py-1.5 text-xs font-mono rounded hover:bg-surface-container text-on-surface-variant transition-colors">768</button>
+<button class="px-3 py-1.5 text-xs font-mono rounded hover:bg-surface-container text-on-surface-variant transition-colors">512</button>
+</div>
+</div>
+</div>
+<!-- CTA -->
+<button class="w-full md:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-primary-container to-secondary-container text-on-primary font-bold text-lg flex items-center justify-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-[0_0_20px_rgba(108,216,203,0.2)]">
+                            生成圖片
+                            <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Empty State -->
+<section class="flex flex-col items-center justify-center flex-grow w-full max-w-3xl px-4 pb-24 text-center">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-high border border-[rgba(108,216,203,0.15)] flex items-center justify-center mb-6 shadow-[0_8px_32px_rgba(12,12,31,0.5)]">
+<span class="material-symbols-outlined text-3xl text-primary" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-on-surface mb-8">準備好把創意變成畫面了嗎？</h3>
+<div class="flex flex-wrap justify-center gap-3">
+<button class="px-4 py-2 rounded-full bg-surface-container border border-outline-variant/30 text-sm text-on-surface-variant hover:border-primary/50 hover:text-primary transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">search</span>
+                    賽博龐克城市夜景
+                </button>
+<button class="px-4 py-2 rounded-full bg-surface-container border border-outline-variant/30 text-sm text-on-surface-variant hover:border-primary/50 hover:text-primary transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">search</span>
+                    寫實風格的貓咪太空人
+                </button>
+<button class="px-4 py-2 rounded-full bg-surface-container border border-outline-variant/30 text-sm text-on-surface-variant hover:border-primary/50 hover:text-primary transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">search</span>
+                    極簡水彩山水畫
+                </button>
+<button class="px-4 py-2 rounded-full bg-surface-container border border-outline-variant/30 text-sm text-on-surface-variant hover:border-primary/50 hover:text-primary transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">search</span>
+                    微距攝影，清晨露珠上的反光
+                </button>
+<button class="px-4 py-2 rounded-full bg-surface-container border border-outline-variant/30 text-sm text-on-surface-variant hover:border-primary/50 hover:text-primary transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">search</span>
+                    3D渲染，發光的幾何圖形
+                </button>
+<button class="px-4 py-2 rounded-full bg-surface-container border border-outline-variant/30 text-sm text-on-surface-variant hover:border-primary/50 hover:text-primary transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">search</span>
+                    吉卜力風格的神秘森林
+                </button>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full bg-surface-container-lowest border-t border-[rgba(108,216,203,0.15)] py-8 px-6 mt-auto">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-fixed-dim" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<span class="text-sm font-headline font-bold text-on-surface">Lightning Lab</span>
+<span class="text-xs font-mono text-on-surface-variant ml-2">v1.0.4-beta</span>
+</div>
+<div class="flex gap-6 text-sm text-on-surface-variant">
+<a class="hover:text-primary transition-colors" href="#">服務條款</a>
+<a class="hover:text-primary transition-colors" href="#">隱私權政策</a>
+<a class="hover:text-primary transition-colors" href="#">GitHub</a>
+</div>
+</div>
+</footer>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center h-16 px-4 bg-[#0c0c1f]/95 backdrop-blur-lg z-50 pb-safe">
+<button class="flex flex-col items-center justify-center text-[#89f5e7] bg-[#1a1a2e] rounded-xl px-4 py-1 hover:text-[#6cd8cb] active:scale-96 transition-all duration-150">
+<span class="material-symbols-outlined mb-1">science</span>
+<span class="text-[10px] font-bold uppercase tracking-[0.1em] font-headline">Laboratory</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-500 hover:text-[#6cd8cb] active:scale-96 transition-all duration-150">
+<span class="material-symbols-outlined mb-1">collections</span>
+<span class="text-[10px] font-bold uppercase tracking-[0.1em] font-headline">Archives</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-500 hover:text-[#6cd8cb] active:scale-96 transition-all duration-150">
+<span class="material-symbols-outlined mb-1">layers</span>
+<span class="text-[10px] font-bold uppercase tracking-[0.1em] font-headline">Models</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-500 hover:text-[#6cd8cb] active:scale-96 transition-all duration-150">
+<span class="material-symbols-outlined mb-1">tune</span>
+<span class="text-[10px] font-bold uppercase tracking-[0.1em] font-headline">Settings</span>
+</button>
+</nav>
+</body></html>
