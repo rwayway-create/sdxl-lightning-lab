@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-TW"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SDXL Lightning · AI 生圖實驗室</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-primary": "#016b55",
+                    "outline": "#88938e",
+                    "surface-container": "#1e2024",
+                    "surface-tint": "#82d6bb",
+                    "on-tertiary-container": "#d6d8e1",
+                    "primary-fixed": "#9ef3d7",
+                    "on-tertiary": "#2d3038",
+                    "secondary-fixed": "#73f9d4",
+                    "surface-bright": "#37393e",
+                    "error": "#ffb4ab",
+                    "on-surface-variant": "#bec9c3",
+                    "tertiary-fixed": "#e0e2ec",
+                    "secondary": "#53dcb9",
+                    "on-background": "#e2e2e8",
+                    "on-surface": "#e2e2e8",
+                    "secondary-container": "#00af8f",
+                    "on-primary-fixed": "#002018",
+                    "on-primary-fixed-variant": "#005140",
+                    "background": "#111317",
+                    "on-error-container": "#ffdad6",
+                    "on-secondary-container": "#003b2e",
+                    "tertiary-container": "#5b5e66",
+                    "on-tertiary-fixed-variant": "#44474f",
+                    "primary": "#82d6bb",
+                    "secondary-fixed-dim": "#53dcb9",
+                    "on-tertiary-fixed": "#191c22",
+                    "on-primary": "#00382b",
+                    "surface-container-highest": "#333539",
+                    "tertiary": "#c4c6d0",
+                    "surface": "#111317",
+                    "on-error": "#690005",
+                    "on-secondary": "#00382c",
+                    "tertiary-fixed-dim": "#c4c6d0",
+                    "surface-dim": "#111317",
+                    "on-secondary-fixed": "#002018",
+                    "surface-variant": "#333539",
+                    "primary-container": "#006b55",
+                    "surface-container-lowest": "#0c0e12",
+                    "error-container": "#93000a",
+                    "surface-container-high": "#282a2e",
+                    "on-secondary-fixed-variant": "#005140",
+                    "surface-container-low": "#1a1c20",
+                    "outline-variant": "#3e4945",
+                    "inverse-surface": "#e2e2e8",
+                    "inverse-on-surface": "#2f3035",
+                    "on-primary-container": "#94e8cc",
+                    "primary-fixed-dim": "#82d6bb"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Lexend"],
+                    "display": ["Lexend"],
+                    "body": ["Lexend"],
+                    "label": ["Lexend"]
+            }
+          },
+        },
+      }
+    </script>
+<style>body {
+    font-family: "Lexend", sans-serif;
+    background-color: #111317;
+    color: #e2e2e8
+    }
+.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+    }
+.glass-panel {
+    background: rgba(26, 29, 36, 0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08)
+    }
+.noise-overlay {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuDyx5pNDsekXsKvjuPswMxFU7KEyNOr2LKePBzKIUGclZg11y_jTsH3SS_M7V8VLwnDqW9BF1s-pPBn6FIlGskQ_aru6MOOZaF4_KirxtgAPb5rHx8O8FmfEMF0UunBVgw8F-9p646CCGueB52sWrkfZYVIYPUdVfRD3PdX7o1qYSgICyv4bKiKd9Yga6AZDECtd4nY_jjA_8rmjsxhFs7jId2advGqG_oeUZKqbeWl8MHDjUgjwOMpzfVj_AY1_hj4joUDVKeiASU);
+    opacity: 0.05
+    }
+.hero-gradient {
+    background: radial-gradient(circle at 0% 0%, rgba(0, 107, 85, 0.15) 0%, transparent 50%), radial-gradient(circle at 100% 100%, rgba(0, 176, 143, 0.1) 0%, transparent 50%)
+    }
+.grid-lines {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px
+    }
+::-webkit-scrollbar {
+    width: 8px
+    }
+::-webkit-scrollbar-track {
+    background: #0c0e12
+    }
+::-webkit-scrollbar-thumb {
+    background: #3e4945;
+    border-radius: 4px
+    }</style>
+</head>
+<body class="bg-background text-on-background min-h-screen selection:bg-primary/30">
+<!-- TopAppBar from JSON -->
+<header class="bg-zinc-950/70 backdrop-blur-xl text-emerald-500 font-lexend tracking-tight docked full-width top-0 sticky z-50 border-b border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex justify-between items-center px-8 h-20 w-full">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-400 bg-clip-text text-transparent">AI 生圖實驗室</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-emerald-400 border-b-2 border-emerald-500 pb-1" href="#">Generator</a>
+<a class="text-zinc-400 hover:text-zinc-100 transition-colors" href="#">Showcase</a>
+<a class="text-zinc-400 hover:text-zinc-100 transition-colors" href="#">Pricing</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-white/5 transition-all duration-300 scale-95 active:duration-100">
+<span class="material-symbols-outlined">history</span>
+</button>
+<button class="p-2 rounded-full hover:bg-white/5 transition-all duration-300 scale-95 active:duration-100">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="p-2 rounded-full hover:bg-white/5 transition-all duration-300 scale-95 active:duration-100">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+</button>
+</div>
+</header>
+<main class="relative">
+<!-- Hero Section -->
+<section class="h-[737px] relative flex flex-col items-center justify-center text-center px-4 overflow-hidden hero-gradient">
+<div class="absolute inset-0 grid-lines pointer-events-none"></div>
+<div class="absolute inset-0 noise-overlay pointer-events-none"></div>
+<div class="relative z-10 max-w-4xl mx-auto">
+<h1 class="text-6xl md:text-7xl font-bold tracking-tighter mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent leading-tight">
+                    AI 生圖實驗室
+                </h1>
+<p class="text-lg md:text-xl text-outline mb-12 font-medium tracking-wide">
+                    Cloudflare × 字節跳動 <span class="text-primary-fixed">SDXL Lightning</span> · 免費無限量
+                </p>
+<div class="flex gap-4 justify-center">
+<div class="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container-low border border-outline-variant/30 text-sm text-outline">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+                        SDXL Lightning 1-Step
+                    </div>
+<div class="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container-low border border-outline-variant/30 text-sm text-outline">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+                        Lightning Fast
+                    </div>
+</div>
+</div>
+</section>
+<!-- Sticky Input Section -->
+<div class="sticky top-20 z-40 -mt-24 px-4 w-full max-w-7xl mx-auto">
+<div class="glass-panel p-6 rounded-2xl shadow-2xl">
+<div class="flex flex-col gap-6">
+<!-- Prompt Input -->
+<div class="relative group">
+<div class="absolute left-4 top-4 text-primary">
+<span class="material-symbols-outlined">colors_spark</span>
+</div>
+<textarea id="prompt" class="w-full bg-surface-container-lowest border-none focus:ring-1 focus:ring-primary/50 rounded-xl pl-12 pr-4 py-4 min-h-[100px] text-on-surface placeholder:text-outline/50 resize-none font-medium text-lg transition-all" placeholder="輸入 prompt 開始創作... (e.g. 賽博龐克城市夜景, 霓虹燈, 雨天)"></textarea>
+<div class="absolute right-4 bottom-4 text-xs text-outline/40 font-mono tracking-widest uppercase">
+                            Cmd+Enter 提交
+                        </div>
+</div>
+<!-- img2img reference upload -->
+<div id="refDrop" class="flex items-center gap-4 px-4 py-3 rounded-xl border border-dashed border-outline-variant/40 bg-surface-container-lowest/40 hover:border-primary/50 transition-all cursor-pointer">
+<span class="material-symbols-outlined text-primary text-[28px]">photo_library</span>
+<div class="flex-1">
+<div class="text-sm font-bold text-on-surface">參考圖（img2img · 可選）</div>
+<div class="text-xs text-outline">拖放、貼上 (Ctrl+V) 或點擊上傳。SDXL 會根據它衍生新圖。</div>
+</div>
+<input id="refFile" type="file" accept="image/*" class="hidden"/>
+<div id="refPreview" class="hidden relative">
+<img id="refImg" class="h-16 w-16 rounded-lg object-cover border border-white/10" alt=""/>
+<button id="refRemove" type="button" class="absolute -top-2 -right-2 w-6 h-6 bg-[#3a1a1a] text-[#ff6b6b] rounded-full flex items-center justify-center text-xs font-bold hover:scale-110 transition-transform" title="移除">
+<span class="material-symbols-outlined text-[14px]">close</span>
+</button>
+</div>
+</div>
+<!-- Settings Bar -->
+<div class="flex flex-wrap items-center justify-between gap-6">
+<div class="flex flex-wrap items-center gap-8">
+<!-- Steps Slider -->
+<div class="flex flex-col gap-2 min-w-[160px]">
+<div class="flex justify-between text-xs font-bold text-outline uppercase tracking-wider">
+<span>Steps</span>
+<span class="text-primary">8</span>
+</div>
+<input id="steps" class="w-full h-1 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-primary" max="20" min="1" type="range" value="8" aria-label="steps"/>
+</div>
+<!-- Strength Slider (img2img only) -->
+<div id="strengthBox" class="flex flex-col gap-2 min-w-[160px] hidden">
+<div class="flex justify-between text-xs font-bold text-outline uppercase tracking-wider">
+<span>Strength</span>
+<span id="strengthVal" class="text-primary">0.75</span>
+</div>
+<input id="strength" class="w-full h-1 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-primary" max="1" min="0" step="0.05" type="range" value="0.75" aria-label="strength"/>
+</div>
+<!-- Resolution Control -->
+<div class="flex flex-col gap-2">
+<span class="text-xs font-bold text-outline uppercase tracking-wider">Resolution</span>
+<div id="resGroup" class="flex bg-surface-container-lowest p-1 rounded-full border border-outline-variant/20">
+<button type="button" data-res="1024" class="res-btn px-4 py-1 rounded-full text-sm font-medium text-on-primary bg-primary shadow-sm">1024</button>
+<button type="button" data-res="768" class="res-btn px-4 py-1 rounded-full text-sm font-medium text-outline hover:text-on-surface transition-colors">768</button>
+<button type="button" data-res="512" class="res-btn px-4 py-1 rounded-full text-sm font-medium text-outline hover:text-on-surface transition-colors">512</button>
+</div>
+</div>
+<!-- Negative Prompt -->
+<div class="flex flex-col gap-2 flex-grow min-w-[240px]">
+<span class="text-xs font-bold text-outline uppercase tracking-wider">Negative Prompt</span>
+<input id="neg" class="bg-surface-container-lowest border-none focus:ring-1 focus:ring-primary/30 rounded-full px-4 py-1.5 text-sm text-outline font-medium" placeholder="Low quality, blurry, distorted..." type="text" aria-label="negative prompt"/>
+</div>
+</div>
+<!-- CTA Button -->
+<button id="goBtn" type="button" class="bg-gradient-to-r from-primary-container to-secondary-container text-on-primary-container px-10 py-4 rounded-xl font-bold text-lg flex items-center gap-3 hover:shadow-[0_0_20px_rgba(0,176,143,0.4)] transition-all active:scale-95 group">
+                            <span id="goLabel">生成圖片</span>
+                            <span id="goIcon" class="material-symbols-outlined group-hover:translate-x-1 transition-transform">bolt</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Results Grid & Empty State -->
+<section class="max-w-7xl mx-auto px-6 py-20 min-h-[614px]">
+<!-- Empty State -->
+<div id="emptyState" class="flex flex-col items-center justify-center text-center space-y-8 py-20">
+<div class="relative">
+<div class="absolute -inset-4 bg-primary/20 blur-3xl rounded-full animate-pulse"></div>
+<div class="relative bg-surface-container p-8 rounded-full border border-primary/20">
+<span class="material-symbols-outlined text-6xl text-primary" style="font-variation-settings: 'wght' 200;">smart_toy</span>
+</div>
+</div>
+<div class="space-y-2">
+<h3 class="text-2xl font-bold text-on-surface">準備好將創意化為現實嗎？</h3>
+<p class="text-outline">嘗試使用下方的熱門關鍵字，或輸入你自己的想法。</p>
+</div>
+<div class="flex flex-wrap justify-center gap-3 max-w-2xl">
+<button type="button" class="example-chip px-5 py-2 rounded-full border border-outline-variant/30 bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-primary hover:border-primary/50 transition-all text-sm font-medium">「賽博龐克城市夜景」</button>
+<button type="button" class="example-chip px-5 py-2 rounded-full border border-outline-variant/30 bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-primary hover:border-primary/50 transition-all text-sm font-medium">「鹽酥雞 台灣夜市攝影」</button>
+<button type="button" class="example-chip px-5 py-2 rounded-full border border-outline-variant/30 bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-primary hover:border-primary/50 transition-all text-sm font-medium">「極簡主義 建築 藍天」</button>
+<button type="button" class="example-chip px-5 py-2 rounded-full border border-outline-variant/30 bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-primary hover:border-primary/50 transition-all text-sm font-medium">「火鍋 蒸氣 暖光」</button>
+<button type="button" class="example-chip px-5 py-2 rounded-full border border-outline-variant/30 bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-primary hover:border-primary/50 transition-all text-sm font-medium">「宮崎駿風格 森林 溪流」</button>
+</div>
+</div>
+<!-- Masonry Grid Example -->
+<div id="grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12 hidden">
+<template id="cardTpl">
+<div class="card group relative bg-surface-container-low rounded-2xl overflow-hidden border border-white/5 transition-all hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+<div class="aspect-square w-full overflow-hidden relative">
+<img class="card-img w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="" src=""/>
+<!-- Floating Tools Overlay -->
+<div class="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300">
+<button type="button" class="card-download w-10 h-10 bg-black/60 backdrop-blur-md text-white rounded-full flex items-center justify-center hover:bg-primary hover:text-on-primary transition-all" title="下載">
+<span class="material-symbols-outlined text-[20px]">download</span>
+</button>
+<button type="button" class="card-regen w-10 h-10 bg-black/60 backdrop-blur-md text-white rounded-full flex items-center justify-center hover:bg-primary hover:text-on-primary transition-all" title="再生一張">
+<span class="material-symbols-outlined text-[20px]">refresh</span>
+</button>
+<button type="button" class="card-copy w-10 h-10 bg-black/60 backdrop-blur-md text-white rounded-full flex items-center justify-center hover:bg-primary hover:text-on-primary transition-all" title="複製 prompt">
+<span class="material-symbols-outlined text-[20px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="p-5 space-y-4">
+<p class="card-prompt text-on-surface font-medium line-clamp-2 text-sm leading-relaxed"></p>
+<div class="card-chips flex flex-wrap gap-2"></div>
+</div>
+</div>
+</template>
+</div>
+</section>
+<!-- Error Toast -->
+<div id="toast" class="fixed bottom-10 right-10 z-[100] flex items-center gap-4 bg-[#3a1a1a] text-[#ff6b6b] px-6 py-4 rounded-xl border border-[#ff6b6b]/20 shadow-2xl transition-all translate-y-0 opacity-0 pointer-events-none">
+<span class="material-symbols-outlined">report_problem</span>
+<div class="flex flex-col">
+<span class="font-bold text-sm">生成失敗</span>
+<span id="toastMsg" class="text-xs opacity-80 max-w-md break-words">連線逾時，請檢查網路設定後重試。</span>
+</div>
+<button id="toastClose" type="button" class="ml-4 p-1 hover:bg-white/10 rounded-full">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</main>
+<!-- Footer from JSON -->
+<footer class="bg-zinc-950 full-width py-12 border-t border-white/5 shadow-none mt-20">
+<div class="flex flex-col md:flex-row justify-between items-center px-12 max-w-7xl mx-auto w-full gap-6">
+<div class="flex flex-col gap-2 text-center md:text-left">
+<span class="font-bold text-zinc-200">AI 生圖實驗室</span>
+<p class="font-lexend text-sm text-zinc-500">© 2024 AI 生圖實驗室 | Powered by SDXL Lightning</p>
+</div>
+<div class="flex gap-8">
+<a class="font-lexend text-sm text-zinc-500 hover:text-emerald-400 transition-colors" href="#">API Docs</a>
+<a class="font-lexend text-sm text-zinc-500 hover:text-emerald-400 transition-colors" href="#">Privacy Policy</a>
+<a class="font-lexend text-sm text-zinc-500 hover:text-emerald-400 transition-colors" href="#">Terms of Service</a>
+</div>
+</div>
+</footer>
+<script>
+// Worker proxies to CF AI binding — no token in client.
+const CF_URL = '/api/generate';
+
+const $ = sel => document.querySelector(sel);
+const promptEl = $('#prompt');
+const stepsEl = $('#steps');
+const negEl = $('#neg');
+const goBtn = $('#goBtn');
+const goLabel = $('#goLabel');
+const goIcon = $('#goIcon');
+const empty = $('#emptyState');
+const grid = $('#grid');
+const tpl = $('#cardTpl');
+const toast = $('#toast');
+const toastMsg = $('#toastMsg');
+const toastClose = $('#toastClose');
+
+let resolution = 1024;
+let refB64 = null;  // img2img reference
+
+// img2img upload (drop / paste / click)
+const refDrop = $('#refDrop');
+const refFile = $('#refFile');
+const refPreview = $('#refPreview');
+const refImg = $('#refImg');
+const refRemove = $('#refRemove');
+const strengthBox = $('#strengthBox');
+const strengthEl = $('#strength');
+const strengthVal = $('#strengthVal');
+
+strengthEl.addEventListener('input', () => strengthVal.textContent = (+strengthEl.value).toFixed(2));
+
+function setRef(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    refB64 = dataUrl.split(',')[1];
+    refImg.src = dataUrl;
+    refPreview.classList.remove('hidden');
+    strengthBox.classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+}
+function clearRef() {
+  refB64 = null;
+  refImg.src = '';
+  refPreview.classList.add('hidden');
+  strengthBox.classList.add('hidden');
+  refFile.value = '';
+}
+
+refDrop.addEventListener('click', e => {
+  if (e.target.closest('#refPreview')) return;
+  refFile.click();
+});
+refFile.addEventListener('change', e => setRef(e.target.files[0]));
+refRemove.addEventListener('click', e => { e.stopPropagation(); clearRef(); });
+
+['dragover', 'dragenter'].forEach(ev => refDrop.addEventListener(ev, e => {
+  e.preventDefault();
+  refDrop.classList.add('border-primary', 'bg-primary/5');
+}));
+['dragleave', 'drop'].forEach(ev => refDrop.addEventListener(ev, e => {
+  e.preventDefault();
+  refDrop.classList.remove('border-primary', 'bg-primary/5');
+}));
+refDrop.addEventListener('drop', e => {
+  if (e.dataTransfer.files[0]) setRef(e.dataTransfer.files[0]);
+});
+
+document.addEventListener('paste', e => {
+  for (const item of e.clipboardData.items) {
+    if (item.type.startsWith('image/')) {
+      setRef(item.getAsFile());
+      break;
+    }
+  }
+});
+
+// steps slider live readout
+const stepsReadout = stepsEl.parentElement.querySelector('.text-primary');
+stepsEl.addEventListener('input', () => stepsReadout.textContent = stepsEl.value);
+
+// resolution segmented control
+document.querySelectorAll('.res-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    resolution = +b.dataset.res;
+    document.querySelectorAll('.res-btn').forEach(x => {
+      x.classList.remove('text-on-primary', 'bg-primary', 'shadow-sm');
+      x.classList.add('text-outline', 'hover:text-on-surface', 'transition-colors');
+    });
+    b.classList.add('text-on-primary', 'bg-primary', 'shadow-sm');
+    b.classList.remove('text-outline', 'hover:text-on-surface', 'transition-colors');
+  });
+});
+
+// example chips
+document.querySelectorAll('.example-chip').forEach(c => {
+  c.addEventListener('click', () => {
+    promptEl.value = c.textContent.replace(/[「」]/g, '').trim();
+    promptEl.focus();
+  });
+});
+
+// keyboard shortcut
+promptEl.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    generate();
+  }
+});
+
+// toast
+let toastTimer;
+function showToast(msg) {
+  toastMsg.textContent = msg;
+  toast.classList.remove('opacity-0', 'pointer-events-none');
+  toast.classList.add('opacity-100');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, 6000);
+}
+function hideToast() {
+  toast.classList.add('opacity-0', 'pointer-events-none');
+  toast.classList.remove('opacity-100');
+}
+toastClose.addEventListener('click', hideToast);
+
+// generate
+goBtn.addEventListener('click', generate);
+
+async function generate() {
+  const prompt = promptEl.value.trim();
+  if (!prompt) { showToast('請輸入 prompt'); return; }
+
+  goBtn.disabled = true;
+  goBtn.classList.add('opacity-70', 'cursor-not-allowed');
+  goLabel.textContent = '生圖中…';
+  goIcon.textContent = 'progress_activity';
+  goIcon.classList.add('animate-spin');
+
+  const t0 = Date.now();
+  try {
+    const body = {
+      prompt,
+      num_steps: +stepsEl.value || 8,
+      width: resolution,
+      height: resolution,
+    };
+    const neg = negEl.value.trim();
+    if (neg) body.negative_prompt = neg;
+    if (refB64) {
+      body.image_b64 = refB64;
+      body.strength = +strengthEl.value || 0.75;
+    }
+
+    const r = await fetch(CF_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) {
+      const txt = await r.text();
+      throw new Error(`HTTP ${r.status}: ${txt.slice(0, 280)}`);
+    }
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const dt = ((Date.now() - t0) / 1000).toFixed(1);
+    addCard({ url, prompt, blob, dt, body });
+  } catch (e) {
+    showToast(e.message);
+  } finally {
+    goBtn.disabled = false;
+    goBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+    goLabel.textContent = '生成圖片';
+    goIcon.textContent = 'bolt';
+    goIcon.classList.remove('animate-spin');
+  }
+}
+
+function addCard({ url, prompt, blob, dt, body }) {
+  empty.classList.add('hidden');
+  grid.classList.remove('hidden');
+
+  const node = tpl.content.firstElementChild.cloneNode(true);
+  const img = node.querySelector('.card-img');
+  img.src = url;
+  img.alt = prompt;
+  node.querySelector('.card-prompt').textContent = prompt;
+
+  const chips = node.querySelector('.card-chips');
+  const mk = (cls, txt) => {
+    const s = document.createElement('span');
+    s.className = `px-3 py-1 rounded-md ${cls} text-[10px] font-bold uppercase tracking-tighter`;
+    s.textContent = txt;
+    return s;
+  };
+  chips.append(
+    mk('bg-primary-container/20 text-primary', `${body.num_steps} steps`),
+    mk('bg-surface-container-highest text-on-surface-variant', `${body.width}×${body.height}`),
+    mk('bg-surface-container-highest text-on-surface-variant', `${dt}s`),
+    mk('bg-surface-container-highest text-on-surface-variant', `${(blob.size/1024).toFixed(0)} KB`),
+  );
+
+  const safeName = prompt.slice(0, 30).replace(/[\s\\/:*?"<>|]+/g, '_') + '.jpg';
+  node.querySelector('.card-download').addEventListener('click', () => {
+    const a = document.createElement('a');
+    a.href = url; a.download = safeName; document.body.appendChild(a); a.click(); a.remove();
+  });
+  node.querySelector('.card-regen').addEventListener('click', () => {
+    promptEl.value = prompt; generate();
+  });
+  node.querySelector('.card-copy').addEventListener('click', () => {
+    navigator.clipboard.writeText(prompt);
+    showToast('Prompt 已複製');
+  });
+
+  grid.prepend(node);
+}
+</script>
+</body></html>

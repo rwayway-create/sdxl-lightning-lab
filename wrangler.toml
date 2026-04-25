@@ -1,0 +1,16 @@
+name = "sdxl-lab"
+main = "src/index.ts"
+compatibility_date = "2026-04-25"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = false
+
+routes = [
+  { pattern = "sdxl.daedalus.work", custom_domain = true }
+]
+
+[ai]
+binding = "AI"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
